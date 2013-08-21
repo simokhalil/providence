@@ -1925,6 +1925,25 @@
 			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
 			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = $t_element->get('datatype');
 		}
+		# --------------------------------------------------------------------------------------------
+		/**
+		 * Find row(s) with fields having values matching specific values. 
+		 * We only process text type_ids here, converting them to numeric value for search
+		 */
+		public static function find($pa_values, $pa_options=null) {
+			$vs_class_name = get_called_class();
+			if ($t_instance = new $vs_class_name) {
+				$vs_type_field_name = $t_instance->getTypeFieldName();
+				if ($t_instance && isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
+				
+					if ($t_instance && ($vn_type_id = $t_instance->getTypeIDForCode($pa_values[$vs_type_field_name]))) {
+						$pa_values[$vs_type_field_name] = $vn_type_id;
+					}
+				}
+			}
+			
+			return parent::find($pa_values, $pa_options);
+		}
 		# ------------------------------------------------------------------
 	}
 ?>

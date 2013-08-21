@@ -9865,7 +9865,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
 	 * the SearchEngine.
 	 *
-	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model. You may use the asterisk ("*") character as a wildcard anywhere within string values.
 	 * @param array $pa_options Options are:
 	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 	 *		returnAs = what to return; possible values are:
@@ -9927,7 +9927,12 @@ $pa_options["display_form_field_tips"] = true;
 				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				if (strpos($vm_value, "*") !== false) {
+					$vm_value_proc = str_replace("*", "%", $vm_value);
+					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value_proc})";
+				} else {
+					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				}
 			}
 		}
 		if(!sizeof($va_sql_wheres)) { return null; }
