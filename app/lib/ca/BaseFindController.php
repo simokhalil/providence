@@ -1009,6 +1009,36 @@
  			$this->render('Results/viz_html.php');
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Generate search/browse results visualization
+ 		 */
+ 		public function VizGetChildren() {
+ 			$pn_id = $this->request->getParameter('id', pString);
+ 			
+ 			$va_data = array();
+ 			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
+				$va_ids = $t_instance->getHierarchyChildren($pn_id, array('idsOnly' => true));
+				if (is_array($va_ids) && sizeof($va_ids)) {
+					$vo_result = caMakeSearchResult($this->ops_tablename, $va_ids);
+					$va_data = array();
+					while($vo_result->nextHit()) {
+						$va_data[] = array(
+							'name' => $vo_result->get($this->ops_tablename.'.preferred_labels'),
+							'idno' => $vo_result->get($this->ops_tablename.'.idno'),
+							'row_id' => $vn_row_id = $vo_result->get($this->ops_tablename.'.'.$vo_result->primaryKey()),
+							'editUrl' => caEditorUrl($this->request, $this->ops_tablename, $vn_row_id),
+							'children' => array(),
+							'childCount' => sizeof($t_instance->getHierarchyChildren($vn_row_id, array('idsOnly' => true)))
+						);
+					}
+				}
+			}
+ 			
+			$this->view->setVar('data', $va_data);
+			
+ 			$this->render('Results/viz_data_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
  		# Results-based inline editing
  		# ------------------------------------------------------------------
  		/**

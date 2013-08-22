@@ -47,6 +47,9 @@
 			case 'editable':
 				print $this->render('Results/ca_occurrences_results_editable_html.php');
 				break;
+			case 'hierarchical':
+				print $this->render('Results/ca_occurrences_results_hierarchical_html.php');
+				break;
 			case 'list':
 			default:
 				print $this->render('Results/ca_occurrences_results_list_html.php');

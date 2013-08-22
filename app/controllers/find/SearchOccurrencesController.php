@@ -64,7 +64,8 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
 				'list' => _t('list'),
-				'editable' => _t('editable')
+				'editable' => _t('editable'),
+				'hierarchical' => _t('hierarchical')
 			);
 			
 			$this->opa_sorts = array_merge(array(

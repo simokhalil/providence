@@ -5395,6 +5395,27 @@ div.debugLabel {
 	margin-top: 5px;
 }
 
+
+
+.node rect {
+	cursor: pointer;
+	fill: #fff;
+	fill-opacity: .5;
+	stroke: #ccc;
+	stroke-width: 1.5px;
+}
+
+.node text {
+	font: 12px sans-serif;
+	/* pointer-events: none; */
+}
+
+path.link {
+	fill: none;
+	stroke: #aaa;
+	stroke-width: 1.5px;
+}
+
 /** 
  *
  * Annotation editor 
