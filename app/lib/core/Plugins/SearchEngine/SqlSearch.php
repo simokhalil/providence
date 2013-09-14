@@ -1405,6 +1405,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		
 		foreach($pa_subject_row_ids as $vn_row_id) {
+			if (!$vn_row_id) { 
+				if ($this->debug) { print "[SqlSearchDebug] Cannot index row because row id is missing!<br>\n"; }
+				continue; 
+			}
 			$vn_seq = 0;
 			foreach($va_words as $vs_word) {
 				if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
@@ -1437,9 +1441,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if ($pb_for_search) {
 			if ($pn_index == 0) {
-				foreach($this->opa_asis_regexes as $vs_asis_regex) {
-					if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
-						return array($ps_content);
+				if (is_array($this->opa_asis_regexes)) {
+					foreach($this->opa_asis_regexes as $vs_asis_regex) {
+						if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
+							return array($ps_content);
+						}
 					}
 				}
 			}
