@@ -153,6 +153,10 @@
  					'y' => (float)$va_annotation['y'],
  					'w' => (float)$va_annotation['w'],
  					'h' => (float)$va_annotation['h'],
+ 					'tx' => (float)$va_annotation['tx'],
+ 					'ty' => (float)$va_annotation['ty'],
+ 					'tw' => (float)$va_annotation['tw'],
+ 					'th' => (float)$va_annotation['th'],
  					'label' => (string)$va_annotation['label'],
  					'description' => (string)$va_annotation['description'],
  					'type' => (string)$va_annotation['type_raw'],
@@ -177,12 +181,11 @@
  			$va_annotation_ids = array();
  			if (is_array($pa_annotations)) {
  				foreach($pa_annotations as $vn_i => $va_annotation) {
- 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : "???";
+ 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';
  					if (isset($va_annotation['annotation_id']) && ($vn_annotation_id = $va_annotation['annotation_id'])) {
  						// edit existing annotation
  						$t_rep->editAnnotation($vn_annotation_id, $g_ui_locale_id, $va_annotation, 0, 0);
  						$va_annotation_ids[$va_annotation['index']] = $vn_annotation_id;
- 						// TODO: allow editing of label
  					} else {
  						// new annotation
  						$va_annotation_ids[$va_annotation['index']] = $t_rep->addAnnotation($vs_label, $g_ui_locale_id, $this->request->getUserID(), $va_annotation, 0, 0);
@@ -205,6 +208,13 @@
  			
  			$this->view->setVar('annotations', $va_annotations);
  			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function ViewerHelp() {
+ 			$this->render('viewer_help_html.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -458,6 +468,8 @@
  			$this->view->setVar('pages', $va_pages);
  			$this->view->setVar('sections', $va_section_cache[$pn_object_id.'/'.$pn_representation_id]);
  			
+ 			$this->view->setVar('is_searchable', MediaContentLocationIndexer::hasIndexing('ca_object_representations', $pn_representation_id));
+ 			
  			$this->render('object_representation_page_list_json.php');
  		}
  		# -------------------------------------------------------
@@ -465,55 +477,10 @@
  		 * 
  		 */ 
  		public function SearchWithinMedia() {
- 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
  			$ps_q = $this->request->getParameter('q', pString);
  			
- 			
-			$o_search_config = Configuration::load($this->request->config->get('search_config'));
- 			$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
- 			$va_words = preg_split("![{$vs_indexing_regex}]!", $ps_q);
- 			$va_hits = array();
- 			
- 			foreach($va_words as $vs_word) {
- 				$va_hits =  array_merge($va_hits, MediaContentLocationIndexer::find('ca_object_representations', $pn_representation_id, $vs_word));
- 			}
- 			$va_results = array(
- 				'matches' => 0,
- 				'results' => array(),
- 				'locations' => array(),
- 				'query' => $ps_q
- 			);
- 			$t_rep = new ca_object_representations($pn_representation_id);
- 			$va_media_info = $t_rep->getMediaInfo('media');
- 	
- 			if (is_array($va_hits) && sizeof($va_hits)) {
- 				$vn_page_width = $va_media_info['INPUT']['WIDTH'];
- 				$vn_page_height = $va_media_info['INPUT']['HEIGHT'];
- 			
- 				$vn_page_image_width = $va_media_info['large']['WIDTH'];
- 				$vn_page_image_height = $va_media_info['large']['HEIGHT'];
- 			
- 				$va_pages = array();
- 				foreach($va_hits as $va_hit) {
- 					$va_results['results'][] = $va_hit['p'];
- 					
- 					$x1_percent = $va_hit['x1']/$vn_page_width;
- 					$x2_percent = $va_hit['x2']/$vn_page_width;
- 					$y1_percent = ($vn_page_height-$va_hit['y2']) / $vn_page_height;
- 					$y2_percent = ($vn_page_height-$va_hit['y1']) / $vn_page_height;
- 					
- 					$x1r = ($x1_percent * $vn_page_image_width) + 2;
- 					$x2r = ($x2_percent * $vn_page_image_width) + 12;
- 					
- 					$y1r = $y1_percent * $vn_page_image_height;
- 					$y2r = $y2_percent * $vn_page_image_height;
- 					
- 					$va_results['locations'][$va_hit['p']][] = array('x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r);
- 				}
- 				$va_results['matches'] = sizeof($va_results['results']);
- 			}
- 			
+ 			$va_results = MediaContentLocationIndexer::SearchWithinMedia($ps_q, 'ca_object_representations', $pn_representation_id, 'media');
  			$this->view->setVar('results', $va_results);
  			
  			$this->render('object_representation_within_media_search_results_json.php');
