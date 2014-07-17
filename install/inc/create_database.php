@@ -88,7 +88,7 @@
                                 <?php echo 'Create setup file'; ?>
                             </span>
                         </a>
-                        <img id="loader" src="inc/loader.gif" style="float: right; display: none;"/>
+                        <img id="loader" src="graphics/loader.gif" style="float: right; display: none;"/>
                     </div>
 
                 </form>
@@ -103,7 +103,7 @@
 
         jQuery.ajax({
             type : 'POST',
-            url: 'index.php?',
+            url: 'create_config.php?',
             data : {
                 validateDbCredentials: true,
                 host: jQuery('#host').val(),

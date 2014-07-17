@@ -29,7 +29,7 @@
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
 	define("__CA_APP_TYPE__", "PROVIDENCE");
 	
-	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
+	if (!file_exists('./setup.php')) { print "No setup.php file found! Please go through <a href='./install/create_config.php'>installation process</a>"; exit; }
 	require('./setup.php');
 	
 	caWriteServerConfigHints();
