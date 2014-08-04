@@ -65,14 +65,14 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		"EXPORT" => array(
 			"application/ply" 						=> "ply",
-            "application/obj"                       => "obj",
 			"application/stl" 						=> "stl",
 			"application/surf" 						=> "surf",
 			"text/plain"							=> "txt",
 			"image/jpeg"							=> "jpg",
-			"image/png"								=> "png"
+			"image/png"								=> "png",
+            "application/obj"                       => "obj",
 		),
-		
+
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing")
 		),
@@ -113,7 +113,6 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Accepts files describing 3D models');
-
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
@@ -149,32 +148,9 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 		// PLY and STL are basically a simple text files describing polygons
 		// SURF is binary but with a plain text meta part at the beginning
 		if ($r_fp = @fopen($ps_filepath, "r")) {
-			$vs_sig = fgets($r_fp, 20); 
-			if (preg_match('!^ply!', $vs_sig)) {
-				$this->properties = $this->handle = $this->ohandle = array(
-					"mimetype" => 'application/ply',
-					"filesize" => filesize($ps_filepath),
-					"typename" => "Polygon File Format"
-				);
-				return "application/ply";
-			}
-			if (preg_match('!^solid!', $vs_sig)) {
-				$this->properties = $this->handle = $this->ohandle = array(
-					"mimetype" => 'application/stl',
-					"filesize" => filesize($ps_filepath),
-					"typename" => "Standard Tessellation Language File"
-				);
-				return "application/stl";
-			}
-			if (preg_match('!\#\ HyperSurface!', $vs_sig)) {
-				$this->properties = $this->handle = $this->ohandle = array(
-					"mimetype" => 'application/surf',
-					"filesize" => filesize($ps_filepath),
-					"typename" => "Surface Grid Format"
-				);
-				return "application/surf";
-			}
-            if (preg_match('!^obj!', $vs_sig)) {
+
+            if(strtolower(substr($ps_filepath, strrpos($ps_filepath, '.') + 1)) == 'obj'){
+
                 $this->properties = $this->handle = $this->ohandle = array(
                     "mimetype" => 'application/obj',
                     "filesize" => filesize($ps_filepath),
