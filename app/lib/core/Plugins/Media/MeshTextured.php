@@ -57,24 +57,19 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 	
 	var $info = array(
 		"IMPORT" => array(
-			"application/ply" 					=> "ply",
-			"application/stl" 					=> "stl",
-			"application/surf" 					=> "surf",
-            "application/obj"                   => "obj",
+            "application/objzip"                   => "objzip",
 		),
 		
 		"EXPORT" => array(
-			"application/ply" 						=> "ply",
-			"application/stl" 						=> "stl",
-			"application/surf" 						=> "surf",
 			"text/plain"							=> "txt",
 			"image/jpeg"							=> "jpg",
 			"image/png"								=> "png",
-            "application/obj"                       => "obj",
+            "application/objzip"                    => "objzip",
 		),
 
 		"TRANSFORMATIONS" => array(
-			"SCALE" 			=> array("width", "height", "mode", "antialiasing")
+			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
+            "UNZIP"             => array("width", "height", "mode", "antialiasing")
 		),
 		
 		"PROPERTIES" => array(
@@ -97,17 +92,11 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 	);
 	
 	var $typenames = array(
-		"application/ply" 				=> "Polygon File Format",
-		"application/stl" 				=> "Standard Tessellation Language File",
-		"application/surf" 				=> "Surface Grid Format",
         "application/obj"               => "OBJ 3D object",
 	);
 	
 	var $magick_names = array(
-		"application/ply" 				=> "PLY",
-		"application/stl" 				=> "STL",
-		"application/surf" 				=> "SURF",
-        "application/obj"               => "OBJ",
+        "application/objzip"               => "OBJZIP",
 	);
 	
 	# ------------------------------------------------
@@ -149,14 +138,14 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 		// SURF is binary but with a plain text meta part at the beginning
 		if ($r_fp = @fopen($ps_filepath, "r")) {
 
-            if(strtolower(substr($ps_filepath, strrpos($ps_filepath, '.') + 1)) == 'obj'){
+            if(strtolower(substr($ps_filepath, strrpos($ps_filepath, '.') + 1)) == 'objzip'){
 
                 $this->properties = $this->handle = $this->ohandle = array(
-                    "mimetype" => 'application/obj',
+                    "mimetype" => 'application/objzip',
                     "filesize" => filesize($ps_filepath),
                     "typename" => "OBJ 3D Object"
                 );
-                return "application/obj";
+                return "application/objzip";
             }
 		}
 
@@ -230,16 +219,16 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function transform($operation, $parameters) {
 		if (!$this->handle) { return false; }
-		
+
 		if (!($this->info["TRANSFORMATIONS"][$operation])) {
 			# invalid transformation
 			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugMediaMesh->transform()");
 			return false;
 		}
-		
+
 		# get parameters for this operation
 		$sparams = $this->info["TRANSFORMATIONS"][$operation];
-		
+
 		switch($operation) {
 			# -----------------------
 			case "SET":
@@ -254,6 +243,8 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 				# noop
 				break;
 			# -----------------------
+            case "UNZIP" :
+                break;
 		}
 		return true;
 	}
@@ -269,20 +260,13 @@ class WLPlugMediaMeshTextured extends BaseMediaPlugin implements IWLPlugMedia {
 			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugMediaMesh->write()");
 			return false;
 		}
+        return "/tmp/downarrow.jpg";
 
-		# pretty restricted, but we can convert ply to stl!
-		if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
-			if(file_exists($this->filepath)){
-				if(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
-					return $ps_filepath.'.stl';	
-				} else {
-					@unlink($ps_filepath.'.stl');
-					$this->postError(1610, _t("Couldn't convert ply model to stl"), "WLPlugMediaMesh->write()");
-					return false;
-				}
-			}
-		}
-		
+        if($ps_mimetype == "image/jpeg"){
+
+        }
+
+
 		# use default media icons
 		return __CA_MEDIA_3D_DEFAULT_ICON__;
 	}
